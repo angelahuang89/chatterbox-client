@@ -2,7 +2,6 @@
 var App = function() {
   this.server = 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages';
   this.friends = [];
-  this.results;
 
   // this.init();
 };
@@ -15,11 +14,11 @@ App.prototype.init = function() {
 App.prototype.send = function(message) {
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
-    url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
+    url: this.server,
     type: 'POST',
-    data: message,
-    dataType: 'json',
-    contentType: 'application/json',
+    data: JSON.stringify(message),
+    // dataType: 'json',
+    contentType: 'application/jsonp',
     success: function (data) {
       console.log('w0000t');
     },
@@ -34,15 +33,16 @@ App.prototype.fetch = function() {
   
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
-    url: 'http://parse.sfs.hackreactor.com/chatterbox/classes/messages',
+    url: this.server,
     type: 'GET',
+    data: 'order=-createdAt&limit=1000',
     dataType: 'json',
     contentType: 'application/json',
     success: function (data) {
       console.log('w0000t');
-      console.log(data.results.forEach(function(message) {
-        App.prototype.renderMessage(message);
-      }));
+      data.results.forEach(message => {
+        App.prototype.renderMessage.call(this, message);
+      });
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -59,15 +59,21 @@ App.prototype.clearMessages = function() {
 App.prototype.renderMessage = function(message) {
   $('#chats').append("<div class='username'>" + message.username + "</div>");
   $('#chats').append("<div class='text'>" + message.text + "</div>");
-  // $('#chats').append("<div>" "</div>");
+  $('.username').click(function() {
+    console.log($(this));
+    app.friends.push(); //gotta figure out what to push here
+  }.bind(this));
 };
 
 App.prototype.renderRoom = function(room) {
-  $('#roomSelect').append("<div>" + room + "</div>");
+  $('#roomSelect').append($("<option>" + room + "</option>"));
 };
 
+// were not using this method right now, not getting into it when we try. 
+// ask why 
 App.prototype.handleUsernameClick = function() {
   $('.username').click(function() {
+    console.log('we in hur')
     this.friends.push($(this));
   }.bind(this));
 };
@@ -77,7 +83,8 @@ App.prototype.handleSubmit = function() {
     var username = window.location.search.split('username')[1].slice(1);
     var text = $('#send').val();
     var message = { 'username': username, 'text': text, 'roomname': null};
-    this.renderMessage(message);
+    this.send(message);
+    // this.renderMessage(message);
     $('#send').val('');
   }.bind(this));
 };
@@ -85,9 +92,10 @@ App.prototype.handleSubmit = function() {
 var app = new App();
 
 $(document).ready(function() {
-  App.prototype.handleUsernameClick();
   App.prototype.handleSubmit();
+  app.handleUsernameClick();
   app.fetch();
+  // app.send({ username: 'i eat turtles', text: 'i am a turtle', roomname: 'general'})
 });
 
 
