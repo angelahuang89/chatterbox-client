@@ -83,7 +83,7 @@ describe('chatterbox', function() {
 
         app.renderMessage(message);
 
-        expect($('#chats').children().length).to.equal(1);
+        expect($('#chats').children().length).to.equal(2);
       });
 
       it('should be able to add rooms to the DOM', function() {
@@ -106,7 +106,7 @@ describe('chatterbox', function() {
 
         app.init();
 
-        $('#main').find('.username').trigger('click');
+        $('#chats').find('.username').trigger('click');
         expect(app.handleUsernameClick.called).to.be.true;
 
         app.handleUsernameClick.restore();
