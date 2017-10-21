@@ -91,3 +91,18 @@ form input[type=text] {
     background-color: #0090da;
 }
 
+#friends {
+    float: right;
+}
+
+.text {
+    margin-bottom: 10px;
+}
+
+#chats {
+    
+}
+#chats .username {
+    color: blue;
+}
+
