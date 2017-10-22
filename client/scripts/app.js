@@ -4,14 +4,8 @@ var App = function() {
   this.friends = [];
   this.results = 5;
   this.currRoom = 'lobby';
-
-  // this.init();
+  this.rooms = {};
 };
-
-// App.prototype.init = function() {
-//   this.handleUsernameClick();
-//   this.handleSubmit();
-// };
 
 App.prototype.send = function(message) {
   $.ajax({
@@ -22,7 +16,7 @@ App.prototype.send = function(message) {
     // dataType: 'json',
     contentType: 'application/jsonp',
     success: function (data) {
-      console.log('w0000t');
+      console.log('w0000Child');
     },
     error: function (data) {
       // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -31,7 +25,7 @@ App.prototype.send = function(message) {
   });
 };
 
-App.prototype.fetch = function(room = 'lobby') {
+App.prototype.fetch = function(room = this.currRoom) {
   $.ajax({
     // This is the url you should use to communicate with the parse API server.
     url: this.server,
@@ -41,17 +35,18 @@ App.prototype.fetch = function(room = 'lobby') {
     contentType: 'application/json',
     success: function (data) {
       console.log('w0000t');
-      // debugger;
-      // window.app.data = data;
-      $('select[id="roomSelect"]').change(function() {
-        this.currRoom = $(this).text();
+      $('#roomSelect').on('change', function() {
+        this.currRoom = $(this).val();
+        console.log($(this).val())
         App.prototype.goToRoom(this.currRoom, data.results);
       });
       
       App.prototype.createRooms(data.results);
       
       data.results.forEach(message => {
-        App.prototype.renderMessage.call(this, message);
+        if (app.currRoom === message.roomname) {
+          App.prototype.renderMessage.call(this, message);
+        }
       });
     },
     error: function (data) {
@@ -66,14 +61,13 @@ App.prototype.clearMessages = function() {
 };
 
 App.prototype.renderMessage = function(message) {
-    
-  // if (!message.username.includes('<') && !message.text.includes('>')) {
-    $('#chats').append("<div value=" + "\'" + message.username + "\'" + " class='username'>" + message.username + "</div>");
-    $('#chats').append("<div class='text'>" + message.text + "</div>");
-  // } 
+  let username = _.escape(message.username);
+  let text = _.escape(message.text);
+       
+  $('#chats').append("<div value=" + "\'" + username + "\'" + " class='username'>" + username + "</div>");
+  $('#chats').append("<div class='text'>" + text + "</div>");
   
   $('.username').click(function() {
-    // console.log(this.text(message.username))
     var friend = $(this).text();
     console.log(friend);
     if (!app.friends.includes(friend)) {
@@ -85,43 +79,27 @@ App.prototype.renderMessage = function(message) {
 
 App.prototype.goToRoom = function(roomname, data) {
   app.clearMessages();
-  app.fetch(roomname);
+  // app.fetch(roomname);
   data.forEach(message => {
-    if (!message.roomname === roomname) {
-      console.log('hi');
-      message.hide();
+    if (message.roomname === roomname) {
+      app.renderMessage(message);
     }
   });
 };
 
-// works once we pass in the right data
 App.prototype.createRooms = function(data) {
-  // grab the roomnames, put them in array
-  $('#roomSelect').empty();
-  var rooms = [];
   data.forEach(message => {
-    if (!rooms.includes(message.roomname)) {
-      rooms.push(message.roomname);
+    if (!app.rooms.hasOwnProperty(message.roomname)) {
+      app.rooms[message.roomname] = message.roomname;
+      app.renderRoom(message.roomname);
     }
   });
-  // now have our uniq roomnames
-  rooms.forEach(room => app.renderRoom(room));
 };
 
 App.prototype.renderRoom = function(room) {
-  $('#roomSelect').append($("<option value=" + "\'" + room + "\'" + ">" + room + "</option>"));
+  $('#roomSelect').append($("<option id='room'>" + room + "</option>"));
 };
 
-// were not using this method right now, not getting into it when we try. 
-// ask why 
-App.prototype.handleUsernameClick = function() {
-  $('.username').click(function() {
-    console.log('we in hur');
-    if (!app.friends.includes(this)) {
-      app.friends.push(this);
-    }
-  });
-};
 
 App.prototype.handleSubmit = function() {
   $('.submit').click(function() {
@@ -144,7 +122,6 @@ $(document).ready(function() {
   }, 10000);
   app.handleSubmit();
   app.createRooms();
-  app.handleUsernameClick();
   app.refreshChats();
 });
 
